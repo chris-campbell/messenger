@@ -27,24 +27,27 @@ const Sidebar = ({
 }) => {
   const classes = useStyles();
 
+  const displayConversations = () => {
+    return conversations
+      .filter((conversation) =>
+        conversation.otherUser.username.includes(searchTerm)
+      )
+      .map((conversation) => {
+        return (
+          <Chat
+            conversation={conversation}
+            key={conversation.otherUser.username}
+            setActiveChat={setActiveChat}
+          />
+        );
+      });
+  };
+
   return (
     <Box className={classes.root}>
       <CurrentUser user={user} />
       <Typography className={classes.title}>Chats</Typography>
-      <Search handleChange={handleChange} />
-      {conversations
-        .filter((conversation) =>
-          conversation.otherUser.username.includes(searchTerm)
-        )
-        .map((conversation) => {
-          return (
-            <Chat
-              conversation={conversation}
-              key={conversation.otherUser.username}
-              setActiveChat={setActiveChat}
-            />
-          );
-        })}
+      <Search handleChange={handleChange} /> {displayConversations()}{' '}
     </Box>
   );
 };

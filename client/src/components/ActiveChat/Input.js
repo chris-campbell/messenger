@@ -32,8 +32,9 @@ const Input = ({ otherUser, conversationId, user, postMessage }) => {
       text: formElements.text.value,
       recipientId: otherUser.id,
       conversationId,
-      sender: conversationId ? null : user,
+      sender: user ? user : null,
     };
+
     await postMessage(reqBody);
     setText('');
   };

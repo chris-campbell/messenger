@@ -53,4 +53,4 @@ const OtherUserBubble = ({ text, time, otherUser }) => {
   );
 };
 
-export default OtherUserBubble;
+export default React.memo(OtherUserBubble);

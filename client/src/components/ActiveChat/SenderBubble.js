@@ -40,4 +40,4 @@ const SenderBubble = ({ time, text }) => {
   );
 };
 
-export default SenderBubble;
+export default React.memo(SenderBubble);

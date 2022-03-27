@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import { Grid, CssBaseline, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-
 import { SidebarContainer } from '../components/Sidebar';
 import { ActiveChat } from '../components/ActiveChat';
 import { SocketContext } from '../context/socket';
@@ -19,7 +18,10 @@ const Home = ({ user, logout }) => {
 
   const socket = useContext(SocketContext);
 
+  // Stores a list of conversations between current user and other users
   const [conversations, setConversations] = useState([]);
+
+  // Holds the username of the user current user is actively talking to
   const [activeConversation, setActiveConversation] = useState(null);
 
   const classes = useStyles();
@@ -33,15 +35,20 @@ const Home = ({ user, logout }) => {
       currentUsers[convo.otherUser.id] = true;
     });
 
+    // Clones array
     const newState = [...conversations];
+
     users.forEach((user) => {
       // only create a fake convo if we don't already have a convo with this user
       if (!currentUsers[user.id]) {
-        let fakeConvo = { otherUser: user, messages: [] };
+        let fakeConvo = {
+          otherUser: user,
+          messages: [],
+        };
+
         newState.push(fakeConvo);
       }
     });
-
     setConversations(newState);
   };
 
@@ -62,16 +69,15 @@ const Home = ({ user, logout }) => {
     });
   };
 
-  const postMessage = (body) => {
+  const postMessage = async (body) => {
     try {
-      const data = saveMessage(body);
+      const data = await saveMessage(body);
 
       if (!body.conversationId) {
         addNewConvo(body.recipientId, data.message);
       } else {
         addMessageToConversation(data);
       }
-
       sendMessage(data, body);
     } catch (error) {
       console.error(error);
@@ -87,6 +93,7 @@ const Home = ({ user, logout }) => {
           convo.id = message.conversationId;
         }
       });
+
       setConversations(conversations);
     },
     [setConversations, conversations]
@@ -96,13 +103,15 @@ const Home = ({ user, logout }) => {
     (data) => {
       // if sender isn't null, that means the message needs to be put in a brand new convo
       const { message, sender = null } = data;
+
       if (sender !== null) {
         const newConvo = {
           id: message.conversationId,
           otherUser: sender,
           messages: [message],
+          latestMessageText: message.text,
         };
-        newConvo.latestMessageText = message.text;
+
         setConversations((prev) => [newConvo, ...prev]);
       }
 
@@ -125,8 +134,13 @@ const Home = ({ user, logout }) => {
     setConversations((prev) =>
       prev.map((convo) => {
         if (convo.otherUser.id === id) {
-          const convoCopy = { ...convo };
-          convoCopy.otherUser = { ...convoCopy.otherUser, online: true };
+          const convoCopy = {
+            ...convo,
+          };
+          convoCopy.otherUser = {
+            ...convoCopy.otherUser,
+            online: true,
+          };
           return convoCopy;
         } else {
           return convo;
@@ -139,8 +153,13 @@ const Home = ({ user, logout }) => {
     setConversations((prev) =>
       prev.map((convo) => {
         if (convo.otherUser.id === id) {
-          const convoCopy = { ...convo };
-          convoCopy.otherUser = { ...convoCopy.otherUser, online: false };
+          const convoCopy = {
+            ...convo,
+          };
+          convoCopy.otherUser = {
+            ...convoCopy.otherUser,
+            online: false,
+          };
           return convoCopy;
         } else {
           return convo;
@@ -149,22 +168,29 @@ const Home = ({ user, logout }) => {
     );
   }, []);
 
-  // Lifecycle
+  const updateMessages = async () => {
+    const resp = await axios.get('/api/conversations');
+    setConversations(resp.data);
+  };
 
+  // Lifecycle
   useEffect(() => {
     // Socket init
     socket.on('add-online-user', addOnlineUser);
     socket.on('remove-offline-user', removeOfflineUser);
-    socket.on('new-message', addMessageToConversation);
+    socket.off('new-message').on('new-message', async (data) => {
+      addMessageToConversation(data);
+      updateMessages();
+    });
 
     return () => {
       // before the component is destroyed
       // unbind all event handlers used in this component
       socket.off('add-online-user', addOnlineUser);
       socket.off('remove-offline-user', removeOfflineUser);
-      socket.off('new-message', addMessageToConversation);
+      // socket.off('new-message', addMessageToConversation);
     };
-  }, [addMessageToConversation, addOnlineUser, removeOfflineUser, socket]);
+  }, [addMessageToConversation, addOnlineUser, removeOfflineUser]);
 
   useEffect(() => {
     // when fetching, prevent redirect
@@ -183,6 +209,7 @@ const Home = ({ user, logout }) => {
     const fetchConversations = async () => {
       try {
         const { data } = await axios.get('/api/conversations');
+        console.log('Upper');
         setConversations(data);
       } catch (error) {
         console.error(error);
@@ -190,6 +217,7 @@ const Home = ({ user, logout }) => {
     };
     if (!user.isFetching) {
       fetchConversations();
+      console.log('Fetching');
     }
   }, [user]);
 
@@ -211,6 +239,7 @@ const Home = ({ user, logout }) => {
           addSearchedUsers={addSearchedUsers}
           setActiveChat={setActiveChat}
         />
+
         <ActiveChat
           activeConversation={activeConversation}
           conversations={conversations}
@@ -221,5 +250,4 @@ const Home = ({ user, logout }) => {
     </>
   );
 };
-
 export default Home;
