@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { Box } from '@material-ui/core';
-import { SenderBubble, OtherUserBubble } from '.';
-import moment from 'moment';
+import React, { useEffect, useState } from "react";
+import { Box } from "@material-ui/core";
+import { SenderBubble, OtherUserBubble } from ".";
+import moment from "moment";
 
 const Messages = (props) => {
-  const { messages, otherUser, userId } = props;
+  const { messages, otherUser, userId, updateMessages } = props;
   const [sortedMessages, setSortedMessages] = useState([]);
-
 
   const sortedMessagesDescending = () => {
     const sorted = messages.sort((a, b) =>
@@ -22,7 +21,7 @@ const Messages = (props) => {
   return (
     <Box>
       {sortedMessages.map((message) => {
-        const time = moment(message.createdAt).format('h:mm');
+        const time = moment(message.createdAt).format("h:mm");
 
         return message.senderId === userId ? (
           <SenderBubble key={message.id} text={message.text} time={time} />
@@ -32,6 +31,7 @@ const Messages = (props) => {
             text={message.text}
             time={time}
             otherUser={otherUser}
+            updateMessages={updateMessages}
           />
         );
       })}
