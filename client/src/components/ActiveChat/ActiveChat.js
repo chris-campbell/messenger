@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Box } from "@material-ui/core";
 import { Input, Header, Messages } from "./index";
@@ -24,7 +24,6 @@ const ActiveChat = ({
   conversations,
   activeConversation,
   postMessage,
-  updateMessages,
 }) => {
   const classes = useStyles();
 
@@ -50,10 +49,10 @@ const ActiveChat = ({
             {user && (
               <>
                 <Messages
+                  conversationId={conversation.id}
                   messages={conversation.messages}
                   otherUser={conversation.otherUser}
                   userId={user.id}
-                  updateMessages={updateMessages}
                 />
                 <Input
                   otherUser={conversation.otherUser}

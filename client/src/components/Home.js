@@ -91,7 +91,6 @@ const Home = ({ user, logout }) => {
           convo.messages.push(message);
           convo.latestMessageText = message.text;
           convo.id = message.conversationId;
-          updateMessages();
         }
       });
 
@@ -113,7 +112,7 @@ const Home = ({ user, logout }) => {
           latestMessageText: message.text,
         };
 
-        setConversations((prev) => [newConvo, ...prev]);
+        setConversations((prev) => [...prev, newConvo]);
       }
 
       conversations.forEach((convo) => {
@@ -169,11 +168,6 @@ const Home = ({ user, logout }) => {
     );
   }, []);
 
-  const updateMessages = async () => {
-    const resp = await axios.get("/api/conversations");
-    setConversations(resp.data);
-  };
-
   // Lifecycle
   useEffect(() => {
     // Socket init
@@ -181,7 +175,6 @@ const Home = ({ user, logout }) => {
     socket.on("remove-offline-user", removeOfflineUser);
     socket.off("new-message").on("new-message", async (data) => {
       addMessageToConversation(data);
-      updateMessages();
     });
 
     return () => {
@@ -203,6 +196,8 @@ const Home = ({ user, logout }) => {
       if (isLoggedIn) history.push("/login");
       else history.push("/register");
     }
+
+    console.log("LoggedIn User", user);
   }, [user, history, isLoggedIn]);
 
   useEffect(() => {
@@ -225,6 +220,8 @@ const Home = ({ user, logout }) => {
     }
   };
 
+  console.log({ conversations });
+
   return (
     <>
       <Button onClick={handleLogout}>Logout</Button>
@@ -243,7 +240,6 @@ const Home = ({ user, logout }) => {
           conversations={conversations}
           user={user}
           postMessage={postMessage}
-          updateMessages={updateMessages}
         />
       </Grid>
     </>

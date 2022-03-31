@@ -4,23 +4,11 @@ import { SenderBubble, OtherUserBubble } from ".";
 import moment from "moment";
 
 const Messages = (props) => {
-  const { messages, otherUser, userId, updateMessages } = props;
-  const [sortedMessages, setSortedMessages] = useState([]);
-
-  const sortedMessagesDescending = () => {
-    const sorted = messages.sort((a, b) =>
-      Date(b.createdAt) < Date(a.createdAt) ? 1 : -1
-    );
-    setSortedMessages(sorted);
-  };
-
-  useEffect(() => {
-    sortedMessagesDescending();
-  }, [messages]);
+  const { messages, otherUser, userId } = props;
 
   return (
     <Box>
-      {sortedMessages.map((message) => {
+      {messages.map((message) => {
         const time = moment(message.createdAt).format("h:mm");
 
         return message.senderId === userId ? (
@@ -31,7 +19,6 @@ const Messages = (props) => {
             text={message.text}
             time={time}
             otherUser={otherUser}
-            updateMessages={updateMessages}
           />
         );
       })}

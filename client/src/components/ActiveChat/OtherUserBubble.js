@@ -31,7 +31,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const OtherUserBubble = ({ text, time, otherUser, updateMessages }) => {
+const OtherUserBubble = ({ text, time, otherUser }) => {
   const classes = useStyles();
 
   return (

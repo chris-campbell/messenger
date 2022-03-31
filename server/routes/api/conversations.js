@@ -52,7 +52,6 @@ router.get("/", async (req, res, next) => {
 
       const convoJSON = convo.toJSON();
 
-
       // set a property "otherUser" so that frontend will have easier access
       if (convoJSON.user1) {
         convoJSON.otherUser = convoJSON.user1;
