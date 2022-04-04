@@ -90,9 +90,7 @@ const Home = ({ user, logout }) => {
         }
       });
 
-      const newConvo = [...conversations];
-
-      setConversations(newConvo);
+      setConversations((prev) => [...prev]);
     },
     [setConversations, conversations]
   );
@@ -108,7 +106,7 @@ const Home = ({ user, logout }) => {
           messages: [message],
         };
         newConvo.latestMessageText = message.text;
-        setConversations((prev) => [newConvo, ...prev]);
+        setConversations((prev) => [...prev, newConvo]);
       }
 
       conversations.forEach((convo) => {
@@ -170,7 +168,7 @@ const Home = ({ user, logout }) => {
     // Socket init
     socket.on("add-online-user", addOnlineUser);
     socket.on("remove-offline-user", removeOfflineUser);
-    socket.off("new-message").on("new-message", async (data) => {
+    socket.on("new-message", async (data) => {
       addMessageToConversation(data);
     });
 
@@ -179,7 +177,7 @@ const Home = ({ user, logout }) => {
       // unbind all event handlers used in this component
       socket.off("add-online-user", addOnlineUser);
       socket.off("remove-offline-user", removeOfflineUser);
-      // socket.off("new-message", addMessageToConversation);
+      socket.off("new-message");
     };
   }, [addMessageToConversation, addOnlineUser, removeOfflineUser]);
 
