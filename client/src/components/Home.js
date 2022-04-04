@@ -18,10 +18,7 @@ const Home = ({ user, logout }) => {
 
   const socket = useContext(SocketContext);
 
-  // Stores a list of conversations between current user and other users
   const [conversations, setConversations] = useState([]);
-
-  // Holds the username of the user current user is actively talking to
   const [activeConversation, setActiveConversation] = useState(null);
 
   const classes = useStyles();
@@ -35,7 +32,6 @@ const Home = ({ user, logout }) => {
       currentUsers[convo.otherUser.id] = true;
     });
 
-    // Clones array
     const newState = [...conversations];
 
     users.forEach((user) => {
@@ -94,7 +90,9 @@ const Home = ({ user, logout }) => {
         }
       });
 
-      setConversations(conversations);
+      const newConvo = [...conversations];
+
+      setConversations(newConvo);
     },
     [setConversations, conversations]
   );
@@ -103,16 +101,14 @@ const Home = ({ user, logout }) => {
     (data) => {
       // if sender isn't null, that means the message needs to be put in a brand new convo
       const { message, sender = null } = data;
-
       if (sender !== null) {
         const newConvo = {
           id: message.conversationId,
           otherUser: sender,
           messages: [message],
-          latestMessageText: message.text,
         };
-
-        setConversations((prev) => [...prev, newConvo]);
+        newConvo.latestMessageText = message.text;
+        setConversations((prev) => [newConvo, ...prev]);
       }
 
       conversations.forEach((convo) => {
@@ -121,7 +117,8 @@ const Home = ({ user, logout }) => {
           convo.latestMessageText = message.text;
         }
       });
-      setConversations(conversations);
+
+      setConversations((prev) => [...prev]);
     },
     [setConversations, conversations]
   );
@@ -182,6 +179,7 @@ const Home = ({ user, logout }) => {
       // unbind all event handlers used in this component
       socket.off("add-online-user", addOnlineUser);
       socket.off("remove-offline-user", removeOfflineUser);
+      // socket.off("new-message", addMessageToConversation);
     };
   }, [addMessageToConversation, addOnlineUser, removeOfflineUser]);
 
@@ -219,8 +217,6 @@ const Home = ({ user, logout }) => {
       await logout(user.id);
     }
   };
-
-  console.log({ conversations });
 
   return (
     <>
